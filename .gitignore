@@ -1,0 +1,38 @@
+# Python cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+
+# Raw data files
+data/
+raw_data/
+*.csv
+*.zip
+
+# Database dump files
+*.sql.gz
+*.dump
+*.bak
+*.sql.bak
+
+# Environment
+.env

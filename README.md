@@ -76,7 +76,7 @@ olist-ecommerce-sql-analysis/
 │   ├── 05_seller_payment_analysis.sql
 │   └── 06_rfm_user_segmentation.sql
 │
-├── output/
+├── sql_output/
 │   ├── 00_setup_outputs.xlsx
 │   ├── 01_business_overview_outputs.xlsx
 │   ├── 02_sales_trend_outputs.xlsx
@@ -441,7 +441,7 @@ source sql/00_setup.sql;
 
 ### 11.3 查看结果
 
-查询结果可以整理至 `output/` 文件夹，包括：
+查询结果可以整理至 `sql_output/` 文件夹，包括：
 
 - 数据导入验证结果
 - 平台整体经营指标
