@@ -9,13 +9,19 @@
 -- 3. 识别高订单低客单、低订单高客单品类
 --
 -- 数据依赖：orders、order_items、products、category_translation、order_reviews
+-- 品类口径：统一去除首尾空格和回车符，空品类标记为 unknown。
+-- 评价口径：涉及 order_reviews 的评分分析先按 order_id 聚合到订单级，再与交易明细联表，避免一单多评价放大 GMV。
 -- =========================================================
 
 USE olist;
 
 -- 3.1 各品类销售额 Top 20
 SELECT
-    COALESCE(ct.product_category_name_english, p.product_category_name) AS category,
+    COALESCE(
+        NULLIF(REPLACE(TRIM(ct.product_category_name_english), CHAR(13), ''), ''),
+        NULLIF(REPLACE(TRIM(p.product_category_name), CHAR(13), ''), ''),
+        'unknown'
+    ) AS category,
     ROUND(SUM(oi.price + oi.freight_value), 2)                          AS gmv
 FROM order_items oi
 JOIN orders o       ON oi.order_id   = o.order_id
@@ -28,7 +34,11 @@ LIMIT 20;
 
 -- 3.2 各品类订单量 Top 20
 SELECT
-    COALESCE(ct.product_category_name_english, p.product_category_name) AS category,
+    COALESCE(
+        NULLIF(REPLACE(TRIM(ct.product_category_name_english), CHAR(13), ''), ''),
+        NULLIF(REPLACE(TRIM(p.product_category_name), CHAR(13), ''), ''),
+        'unknown'
+    ) AS category,
     COUNT(DISTINCT oi.order_id)                                          AS order_count
 FROM order_items oi
 JOIN orders o       ON oi.order_id   = o.order_id
@@ -42,7 +52,11 @@ LIMIT 20;
 -- 3.3 各品类客单价 Top 20
 -- 说明：排除订单量少于100的品类，避免小样本干扰
 SELECT
-    COALESCE(ct.product_category_name_english, p.product_category_name) AS category,
+    COALESCE(
+        NULLIF(REPLACE(TRIM(ct.product_category_name_english), CHAR(13), ''), ''),
+        NULLIF(REPLACE(TRIM(p.product_category_name), CHAR(13), ''), ''),
+        'unknown'
+    ) AS category,
     COUNT(DISTINCT oi.order_id)                                          AS order_count,
     ROUND(SUM(oi.price + oi.freight_value)
           / COUNT(DISTINCT oi.order_id), 2)                             AS aov
@@ -58,9 +72,20 @@ LIMIT 20;
 
 -- 3.4 品类销售额与评分矩阵
 -- 说明：识别高销售但低评分的问题品类
-WITH category_stats AS (
+WITH review_by_order AS (
     SELECT
-        COALESCE(ct.product_category_name_english, p.product_category_name) AS category,
+        order_id,
+        AVG(review_score) AS review_score
+    FROM order_reviews
+    GROUP BY order_id
+),
+category_stats AS (
+    SELECT
+        COALESCE(
+            NULLIF(REPLACE(TRIM(ct.product_category_name_english), CHAR(13), ''), ''),
+            NULLIF(REPLACE(TRIM(p.product_category_name), CHAR(13), ''), ''),
+            'unknown'
+        ) AS category,
         COUNT(DISTINCT oi.order_id)                 AS order_count,
         ROUND(SUM(oi.price + oi.freight_value), 2)  AS gmv,
         ROUND(AVG(r.review_score), 2)               AS avg_score
@@ -68,7 +93,7 @@ WITH category_stats AS (
     JOIN orders o       ON oi.order_id   = o.order_id
     JOIN products p     ON oi.product_id = p.product_id
     LEFT JOIN category_translation ct ON p.product_category_name = ct.product_category_name
-    LEFT JOIN order_reviews r          ON oi.order_id = r.order_id
+    LEFT JOIN review_by_order r        ON oi.order_id = r.order_id
     WHERE o.order_status NOT IN ('canceled', 'unavailable')
     GROUP BY category
 )
@@ -91,7 +116,11 @@ LIMIT 30;
 -- 说明：识别高量低价、低量高价品类，辅助运营策略制定
 WITH category_stats AS (
     SELECT
-        COALESCE(ct.product_category_name_english, p.product_category_name) AS category,
+        COALESCE(
+            NULLIF(REPLACE(TRIM(ct.product_category_name_english), CHAR(13), ''), ''),
+            NULLIF(REPLACE(TRIM(p.product_category_name), CHAR(13), ''), ''),
+            'unknown'
+        ) AS category,
         COUNT(DISTINCT oi.order_id)                                          AS order_count,
         ROUND(SUM(oi.price + oi.freight_value)
               / COUNT(DISTINCT oi.order_id), 2)                             AS aov
@@ -117,7 +146,11 @@ ORDER BY order_count DESC;
 
 -- 3.6 品类销售额与订单量概览（用于可视化导出）
 SELECT
-    COALESCE(ct.product_category_name_english, p.product_category_name) AS category,
+    COALESCE(
+        NULLIF(REPLACE(TRIM(ct.product_category_name_english), CHAR(13), ''), ''),
+        NULLIF(REPLACE(TRIM(p.product_category_name), CHAR(13), ''), ''),
+        'unknown'
+    ) AS category,
     COUNT(DISTINCT oi.order_id)                                          AS order_count,
     ROUND(SUM(oi.price + oi.freight_value), 2)                          AS gmv
 FROM order_items oi

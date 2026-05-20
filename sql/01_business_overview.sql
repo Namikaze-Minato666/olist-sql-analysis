@@ -14,6 +14,24 @@
 USE olist;
 
 -- 1.1 平台整体经营指标
+-- 口径说明：
+-- 1) total_orders 为 orders 与 order_items 内连接后的订单数，即参与 GMV 统计且有商品明细的订单数。
+-- 2) total_customers 为上述订单覆盖到的 customer_unique_id 去重用户数，不等同于 customers 全表去重用户数。
+-- 3) cancel_rate_pct 按订单级去重计算，避免多商品订单在 order_items 明细行中被重复计数。
+-- 4) avg_review_score 先将 order_reviews 按 order_id 聚合到订单级，再计算订单级平均评分。
+WITH order_scope AS (
+    SELECT DISTINCT
+        o.order_id
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+),
+review_by_order AS (
+    SELECT
+        order_id,
+        AVG(review_score) AS review_score
+    FROM order_reviews
+    GROUP BY order_id
+)
 SELECT
     COUNT(DISTINCT o.order_id)                                              AS total_orders,
     ROUND(SUM(oi.price + oi.freight_value), 2)                             AS total_gmv,
@@ -21,15 +39,18 @@ SELECT
     COUNT(DISTINCT oi.seller_id)                                            AS total_sellers,
     ROUND(SUM(oi.price + oi.freight_value) / COUNT(DISTINCT o.order_id), 2) AS aov,
     ROUND(AVG(oi.freight_value), 2)                                         AS avg_freight,
-    ROUND(AVG(r.review_score), 2)                                           AS avg_review_score,
+    ROUND((
+        SELECT AVG(r.review_score)
+        FROM order_scope os
+        JOIN review_by_order r ON os.order_id = r.order_id
+    ), 2)                                                                   AS avg_review_score,
     ROUND(
-        SUM(CASE WHEN o.order_status = 'canceled' THEN 1 ELSE 0 END)
+        COUNT(DISTINCT CASE WHEN o.order_status = 'canceled' THEN o.order_id END)
         / COUNT(DISTINCT o.order_id) * 100, 2
     )                                                                       AS cancel_rate_pct
 FROM orders o
 JOIN order_items oi   ON o.order_id  = oi.order_id
-JOIN customers c      ON o.customer_id = c.customer_id
-LEFT JOIN order_reviews r ON o.order_id = r.order_id;
+JOIN customers c      ON o.customer_id = c.customer_id;
 
 -- 1.2 用户平均下单次数
 SELECT

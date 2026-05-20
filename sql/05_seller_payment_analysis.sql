@@ -10,11 +10,20 @@
 -- 4. 分析信用卡分期偏好
 --
 -- 数据依赖：order_items、orders、sellers、order_reviews、order_payments
+-- 评价口径：卖家评分先将 order_reviews 按 order_id 聚合到订单级，再与商品明细联表，
+-- 避免一单多评价重复放大 GMV 或评分统计。
 -- =========================================================
 
 USE olist;
 
 -- 5.1 Top 20 卖家（按销售额）
+WITH review_by_order AS (
+    SELECT
+        order_id,
+        AVG(review_score) AS review_score
+    FROM order_reviews
+    GROUP BY order_id
+)
 SELECT
     oi.seller_id,
     s.seller_city,
@@ -25,7 +34,7 @@ SELECT
 FROM order_items oi
 JOIN orders o       ON oi.order_id  = o.order_id
 JOIN sellers s      ON oi.seller_id = s.seller_id
-LEFT JOIN order_reviews r ON oi.order_id = r.order_id
+LEFT JOIN review_by_order r ON oi.order_id = r.order_id
 WHERE o.order_status NOT IN ('canceled', 'unavailable')
 GROUP BY oi.seller_id, s.seller_city, s.seller_state
 ORDER BY gmv DESC

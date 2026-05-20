@@ -114,57 +114,58 @@ CREATE TABLE category_translation (
 -- =========================================================
 -- 0.4 导入数据
 -- 注意：请将路径替换为本机实际路径
+-- 示例中的 D:/your_path/olist_csv/ 仅为路径占位，复现时请改为你的 Olist CSV 文件所在目录。
 -- =========================================================
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_customers_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_customers_dataset.csv'
 INTO TABLE customers
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_geolocation_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_geolocation_dataset.csv'
 INTO TABLE geolocation
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_orders_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_orders_dataset.csv'
 INTO TABLE orders
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_order_items_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_order_items_dataset.csv'
 INTO TABLE order_items
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_order_payments_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_order_payments_dataset.csv'
 INTO TABLE order_payments
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_order_reviews_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_order_reviews_dataset.csv'
 INTO TABLE order_reviews
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_products_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_products_dataset.csv'
 INTO TABLE products
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/olist_sellers_dataset.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/olist_sellers_dataset.csv'
 INTO TABLE sellers
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-LOAD DATA LOCAL INFILE 'D:/sql_project/product_category_name_translation.csv'
+LOAD DATA LOCAL INFILE 'D:/your_path/olist_csv/product_category_name_translation.csv'
 INTO TABLE category_translation
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
